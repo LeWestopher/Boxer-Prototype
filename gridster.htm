@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<!-- saved from url=(0037)http://gridster.net/demos/resize.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Demo » Resize » gridster.js</title>
+  <link rel="stylesheet" type="text/css" href="./gridster_files/jquery.gridster.css">
+  <link rel="stylesheet" type="text/css" href="./gridster_files/demo.css">
+<style type="text/css"> 
+</style></head>
+
+<body>
+
+  <div class="gridster ready" style="margin-left: 500px;">
+    <ul style="height: 390px; width: 440px; position: relative;">
+      <li data-row="1" data-col="1" data-sizex="1" data-sizey="1" class="gs-w grid" style="min-width: 100px; min-height: 55px;">0<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+      <li data-row="1" data-col="3" data-sizex="1" data-sizey="1" class="gs-w grid">1<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+      <li data-row="5" data-col="1" data-sizex="1" data-sizey="1" class="gs-w grid" style="position: absolute; min-width: 100px; min-height: 55px;">3<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+      <li data-row="1" data-col="2" data-sizex="1" data-sizey="1" class="gs-w grid" style="position: absolute; min-width: 100px; min-height: 55px;">4<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+      <li data-row="3" data-col="1" data-sizex="1" data-sizey="1" class="gs-w grid" style="min-width: 100px; min-height: 55px;">5<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+      <li data-row="5" data-col="3" data-sizex="1" data-sizey="1" class="gs-w grid" style="position: absolute; min-width: 100px; min-height: 55px;">6<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+      <li data-row="5" data-col="2" data-sizex="1" data-sizey="1" class="gs-w grid" style="min-width: 100px; min-height: 55px;">7<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+      <li data-row="3" data-col="3" data-sizex="1" data-sizey="1" class="gs-w grid" style="position: absolute; min-width: 100px; min-height: 55px;">8<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+      <li data-row="3" data-col="2" data-sizex="1" data-sizey="1" class="gs-w grid" style="min-width: 100px; min-height: 55px; position: absolute;">9<span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span><span class="gs-resize-handle gs-resize-handle-both"></span></li>
+    </ul>
+  </div>
+
+    <script type="text/javascript" src="./gridster_files/jquery.js"></script>
+    <script src="./gridster_files/jquery.gridster.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript">
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    </script>
+
+    <script type="text/javascript">
+      var gridster;
+
+      $(function(){
+
+        gridster = $(".gridster ul").gridster({
+          widget_base_dimensions: [250, 250],
+          widget_margins: [5, 5],
+          helper: 'clone',
+          min_rows: 3,
+          min_cols: 3,
+          max_cols: 3,
+          resize: {
+            enabled: true
+          }
+        }).data('gridster');
+
+
+        $('.js-resize-random').on('click', function() {
+            gridster.resize_widget(gridster.$widgets.eq(getRandomInt(0, 9)),
+                getRandomInt(1, 4), getRandomInt(1, 4))
+        });
+        
+        gridster.disable();
+
+      });
+      
+    function Square(x, y, el) {
+        this.x = x;
+        this.y = y;
+        this.$el = $(el);
+    }
+    
+    Square.prototype.getArea = function() {
+        return this.$el.attr('data-sizex') * this.$el.attr('data-sizey');
+    }
+
+    function Collision(previousSquare, newSquare) {
+        this.previousSquare = previousSquare;
+        this.newSquare = newSquare;
+    }
+
+    Collision.prototype.delete = function() {
+        collisions.splice(0, collisions.length + 1);
+    }
+
+    var currentSquare;
+    var collisions = [];
+    var isCombining = false;
+
+    function processCollisions(collideArray) {
+        var $origin = collideArray[0]['previousSquare']['$el'];
+        console.log('Origin:');
+        //console.log($origin.width());
+        var finalX = parseInt($origin.attr('data-sizex'));
+        var finalY = parseInt($origin.attr('data-sizey'));
+        console.log(collideArray);
+        $.each(collideArray, function(index, collision) {
+            if(collision.previousSquare.getArea() !== collision.newSquare.getArea()) {
+                return false;
+            }
+            console.log('Iteration ' + index);
+            console.log(collision);
+            console.log('Iteration ' + index +' end');
+            var newX = parseInt(collision.newSquare.$el.attr('data-sizex'));
+            var newY = parseInt(collision.newSquare.$el.attr('data-sizey'));
+            if(collision.previousSquare.x !== collision.newSquare.x) {           
+                gridster.remove_widget(collision.newSquare.$el, function() {
+                //    var currentX = parseInt($origin.attr('data-sizex'));
+                //    gridster.resize_widget($origin, currentX + newX);
+                });
+                finalX += newX;
+            } else if (collision.previousSquare.y !== collision.newSquare.y) {
+                gridster.remove_widget(collision.newSquare.$el, function() {
+                //    var currentY = parseInt($origin.attr('data-sizey'));
+                //    var currentX = parseInt($origin.attr('data-sizex'));
+                //    console.log(currentY);
+                //    console.log(newY);
+                //    gridster.resize_widget($origin, currentX, currentY + newY);
+                });
+                finalY += newY;
+            }
+            console.log(finalX);
+            console.log(finalY);
+            gridster.resize_widget($origin, finalX, finalY);
+        });
+        deleteCollisions();
+    }
+
+    function deleteCollisions() {
+        collisions.splice(0, collisions.length);
+    }
+
+    $('.grid').mousedown(function() {
+        isCombining = true;
+        var originSquare = new Square(
+            $(this).attr('data-col'),
+            $(this).attr('data-row'),
+            this
+        );
+        console.log(originSquare);
+        currentSquare = originSquare;
+        $('.grid').mouseover(function() {
+            if(isCombining) {
+                var newSquare = new Square(
+                    $(this).attr('data-col'),
+                    $(this).attr('data-row'),
+                    this
+                );
+                if(newSquare !== currentSquare) {
+                    var newCollision = new Collision(
+                        currentSquare,
+                        newSquare
+                    );
+                    currentSquare = newSquare;
+                    console.log(newCollision);
+                    collisions.push(newCollision)
+                    //console.log(collisions);
+                }   
+            }
+        });
+    });
+
+    $(document).mouseup(function() {
+        isCombining = false;
+        processCollisions(collisions);
+        deleteCollisions();
+    });
+    </script>
+
+
+</body></html>
